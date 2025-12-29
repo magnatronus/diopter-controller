@@ -1,25 +1,32 @@
 #include <Arduino.h>
 
-#include "DiopterHTML.h";
+#include "DiopterHTML.h"
 
-DiopterHTML::DiopterHTML()
-{
-}
+
+DiopterHTML::DiopterHTML(){};
 
 // Show the Home page
-void DiopterHTML::showHomePage(WebServer server) {
+String DiopterHTML::homePage() {
     Serial.println("home page serving");
     String html = bodyStart();
     html += "<h1>SpiralArm Diopter Controller</h1>";
     html += bodyEnd();
-    serverSend(html, server);
+    return html;
 };
 
+// Single motor controller as a set of 4 buttons
+// up, down, left, right
+String motorController(){
+    String mc = "";
+    return mc;
+}
 
-// Send the HTML(serve it)
-void DiopterHTML::serverSend(String html, WebServer &server){
-    server.send(200, "text/html", html);
-};
+
+
+// // Send the HTML(serve it)
+// void serverSend(String html, WebServer server){
+//     server.send(200, "text/html", html);
+// };
 
 // Standard HTML Page Header and Body
 String DiopterHTML::bodyStart() {

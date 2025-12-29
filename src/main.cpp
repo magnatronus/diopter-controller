@@ -3,74 +3,117 @@
  * Diopter_Controller
  * Sketch used to control the 4 servos for the Diopter project
  * as well as reading the LIDAR for distance measurement
-*/
+ */
 #include <Arduino.h>
 #include <ESP32Servo.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include <DiopterHTML.h>
-
+// #include <DiopterHTML.h>
+#include "SPIFFS.h"
 
 // VAR defs
 IPAddress ipAddress;
-const char* ssid = "DIOPTER-ONE";
-
+const char *ssid = "DIOPTER-ONE";
 
 // create servo object to control a servo
-Servo myservo;
+Servo leftHorizontalServo;
+Servo leftVerticalServo;
 
 // variable to store the servo position
-int pos = 0;
+int posLeftHorizontal = 0;
+int posLeftVertical = 0;
 
 // GPIO pin used to connect the servo
 // Recommended PWM GPIO pins on the ESP32 include 2,4,12-19,21-23,25-27,32-33
-int servoPin = 13;
+int leftVerticalPin = 13;
+int leftHorizontalPin = 14;
 
 // WebServer & html helper
 WebServer server(80);
-DiopterHTML html = DiopterHTML();
+// DiopterHTML htmlGen = DiopterHTML();
 
-// Standard HTML Page Header and Body
-String bodyStart() {
-  String html = "<!DOCTYPE html><html><head>";
-  html += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-  html += "<link rel=\"icon\" href=\"data:,\">";
-  html += "<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}";
-  html += ".input-text { font-size: 30px; margin: 2px;}";
-  html += ".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}";
-  html += ".submit-btn { background-color: #33CC00; border: none; color: white; padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}";
-  html += ".btn-stop { background-color: #CC0000; }</style>";
-  html += "</head>";
-  html += "<body>";
-  return html;
+// Render the specified file uploaded to SPIFFS
+void renderFileStream(String filename)
+{
+  File file = SPIFFS.open(filename, "r");
+  if (!file)
+  {
+    server.send(404, "text/plain", "File Not Found");
+    return;
+  }
+  server.streamFile(file, "text/html");
+  file.close();
 }
 
-
-
+// Render a page to the HTTP server deined by the string [html]
+void renderPage(int httpCode, String html)
+{
+  server.send(httpCode, "text/html", html);
+}
 
 // Set up WiFi as an AP
-void initWiFi(){
+void initWiFi()
+{
   Serial.println("Starting Access Point..");
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid);
   ipAddress = WiFi.softAPIP();
-  Serial.print("Server address: "); Serial.println(ipAddress);
+  Serial.print("Server address: ");
+  Serial.println(ipAddress);
 }
 
 // Set up web server handlers
-void initWebServer(){
+void initWebServer()
+{
   Serial.println("Initialising Web Server routes ");
-  server.on("/", html.showHomePage(server&));
-  //server.on("/app/run", handleStart);
-  //server.on("/app/stop", handleStop);
+  server.serveStatic("/style.css", SPIFFS, "/style.css");
+  server.serveStatic("/app.js", SPIFFS, "/app.js");
+  server.on("/", []()
+            { renderFileStream("/home.html"); });
+
+  // LEFT EYE CONTROL
+  server.on("/lc", []()
+            { 
+              Serial.println("LEFT CALIBRATE");
+              posLeftHorizontal = 90;
+              posLeftVertical = 90;
+              //leftHorizontalServo.write(posLeftHorizontal);
+              leftVerticalServo.write(posLeftVertical);
+              renderFileStream("/home.html"); 
+            });
+  server.on("/lu", []()
+            { 
+              Serial.println("LEFT UP");
+              if(posLeftVertical - 5 > 0){
+                posLeftVertical -= 5;
+                leftVerticalServo.write(posLeftVertical);
+              }              
+              renderFileStream("/home.html"); 
+            });
+  server.on("/ld", []()
+            { 
+              Serial.println("LEFT DOWN"); 
+              posLeftVertical +=5;
+              leftVerticalServo.write(posLeftVertical);                
+              renderFileStream("/home.html"); 
+            });
+  server.on("/ll", []()
+            { Serial.println("LEFT LEFT"); renderFileStream("/home.html"); });
+  server.on("/lr", []()
+            { Serial.println("LEFT RIGHT"); renderFileStream("/home.html"); });
 }
 
-
-
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   delay(2000);
   Serial.println("Running setup");
+
+  if (!SPIFFS.begin(true))
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
 
   // Allow allocation of all timers
   ESP32PWM::allocateTimer(0);
@@ -82,40 +125,25 @@ void setup() {
   initWiFi();
   initWebServer();
 
-  // Standard 50hz servo
-  myservo.setPeriodHertz(250);
+  // Standard 50hz servo (use 250)
+  leftVerticalServo.setPeriodHertz(250);
 
   // attach the servoPin to the servo object and set the sweep range
   // For SG90, 500 and 2400 might be more suitable
   // different servos may require different min/max settings
-  myservo.attach(servoPin, 500, 2400);
-  myservo.write(0);
+  leftVerticalServo.attach(leftVerticalPin, 500, 2400);
+  leftVerticalServo.write(posLeftVertical);
   delay(50);
 
   // Start the web server
   server.begin();
   Serial.println("Setup completed");
-
 }
 
-void loop() {
+void loop()
+{
 
   // Handle incoming client requests
   server.handleClient();
 
-  // // goes from 0 degrees to 180 degrees
-  // for (pos = 0; pos <= 180; pos += 1) {
-  //   myservo.write(pos);    // tell servo to go to position in variable 'pos'
-  //   delay(100);             // waits 15ms for the servo to reach the position
-  // }
-
-  // // goes from 180 degrees to 0 degrees
-  // for (pos = 180; pos >= 0; pos -= 1) {
-  //   myservo.write(pos);    // tell servo to go to position in variable 'pos'
-  //   delay(1);             // waits 15ms for the servo to reach the position
-  // }
-  // delay(50);
 }
-
-
-

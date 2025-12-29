@@ -1,0 +1,75 @@
+           html {
+               font-family: Helvetica;
+               display: inline-block;
+               margin: 0px auto;
+               text-align: center;
+           }
+
+body {
+    font-family: monospace;
+}
+
+           .input-text {
+               font-size: 30px;
+               margin: 2px;
+           }
+
+           .button {
+               background-color: #4CAF50;
+               border: none;
+               color: white;
+               padding: 16px 40px;
+               text-decoration: none;
+               font-size: 30px;
+               margin: 2px;
+               cursor: pointer;
+           }
+
+           .submit-btn {
+               border-radius: 10px ;
+               border: 1px solid green;
+               padding: 16px;
+               text-decoration: none;
+               font-size: 15px;
+               margin: 2px;
+               cursor: pointer;
+           }
+
+           .btn-stop {
+               background-color: #CC0000;
+           }
+
+           .action-btn {
+               border-radius: 10px ;
+               border: 1px solid blue;
+               padding: 16px;
+               text-decoration: none;
+               font-size: 15px;
+               margin: 2px;
+               cursor: pointer;
+           }
+
+           .twocolumn {
+               float: left;
+               width: 50%;
+               padding: 10px;
+           }
+
+
+           /* Create two equal columns that floats next to each other */
+           .threecolumn {
+               float: left;
+               width: 33.33%;
+               padding: 10px;
+           }
+
+           * {
+               box-sizing: border-box;
+           }
+
+           /* Clear floats after the columns */
+           .row:after {
+               content: "";
+               display: table;
+               clear: both;
+           }
