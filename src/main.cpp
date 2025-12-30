@@ -14,6 +14,7 @@
 // VAR defs
 IPAddress ipAddress;
 const char *ssid = "DIOPTER-ONE";
+int stepIncrement = 1;  // should really be 1 (5 for testing)
 
 // create servo object to control a servo
 Servo leftHorizontalServo;
@@ -25,8 +26,8 @@ int posLeftVertical = 0;
 
 // GPIO pin used to connect the servo
 // Recommended PWM GPIO pins on the ESP32 include 2,4,12-19,21-23,25-27,32-33
-int leftVerticalPin = 13;
-int leftHorizontalPin = 14;
+int leftVerticalPin = 12;
+int leftHorizontalPin = 13;
 
 // WebServer & html helper
 WebServer server(80);
@@ -74,18 +75,18 @@ void initWebServer()
   // LEFT EYE CONTROL
   server.on("/lc", []()
             { 
-              Serial.println("LEFT CALIBRATE");
+              Serial.println("LEFT CENTER");
               posLeftHorizontal = 90;
               posLeftVertical = 90;
-              //leftHorizontalServo.write(posLeftHorizontal);
+              leftHorizontalServo.write(posLeftHorizontal);
               leftVerticalServo.write(posLeftVertical);
               renderFileStream("/home.html"); 
             });
   server.on("/lu", []()
             { 
               Serial.println("LEFT UP");
-              if(posLeftVertical - 5 > 0){
-                posLeftVertical -= 5;
+              if(posLeftVertical - stepIncrement > 0){
+                posLeftVertical -= stepIncrement;
                 leftVerticalServo.write(posLeftVertical);
               }              
               renderFileStream("/home.html"); 
@@ -93,14 +94,26 @@ void initWebServer()
   server.on("/ld", []()
             { 
               Serial.println("LEFT DOWN"); 
-              posLeftVertical +=5;
+              posLeftVertical +=stepIncrement;
               leftVerticalServo.write(posLeftVertical);                
               renderFileStream("/home.html"); 
             });
   server.on("/ll", []()
-            { Serial.println("LEFT LEFT"); renderFileStream("/home.html"); });
+            { 
+              Serial.println("LEFT LEFT"); 
+              if(posLeftHorizontal - stepIncrement > 0){
+                posLeftHorizontal -= stepIncrement;
+                leftHorizontalServo.write(posLeftHorizontal);
+              }                 
+              renderFileStream("/home.html"); 
+            });
   server.on("/lr", []()
-            { Serial.println("LEFT RIGHT"); renderFileStream("/home.html"); });
+            { 
+              Serial.println("LEFT RIGHT"); 
+              posLeftHorizontal +=stepIncrement;
+              leftHorizontalServo.write(posLeftHorizontal);  
+              renderFileStream("/home.html"); 
+            });
 }
 
 void setup()
@@ -125,14 +138,18 @@ void setup()
   initWiFi();
   initWebServer();
 
-  // Standard 50hz servo (use 250)
+  // Standard  servos (use 50 - 250)
   leftVerticalServo.setPeriodHertz(250);
+  leftHorizontalServo.setPeriodHertz(250);
 
-  // attach the servoPin to the servo object and set the sweep range
+  // attach the servoPins to the servo object and set the sweep range
   // For SG90, 500 and 2400 might be more suitable
   // different servos may require different min/max settings
   leftVerticalServo.attach(leftVerticalPin, 500, 2400);
   leftVerticalServo.write(posLeftVertical);
+  delay(50);
+  leftHorizontalServo.attach(leftHorizontalPin, 500, 2400);
+  leftHorizontalServo.write(posLeftHorizontal);
   delay(50);
 
   // Start the web server
