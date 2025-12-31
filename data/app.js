@@ -41,6 +41,13 @@ document.querySelector("#btn-left-calibrate").addEventListener("click", () => {
     showLeftVerticalDiopter();
 });
 
+// left zero
+document.querySelector("#btn-left-zero").addEventListener("click", () => {
+    localStorage.setItem('luv', 0);
+    localStorage.setItem('luh', 0);
+    showLeftVerticalDiopter();
+});
+
 // left up
 document.querySelector("#btn-left-up").addEventListener("click", () => {
     var val = parseInt(readLeftButtonVertical());

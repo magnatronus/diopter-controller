@@ -14,16 +14,27 @@
     </p>
 
     <div class="row">
-        <div class="twocolumn">
-            <form action="/lc" method="get">
-                <input type="submit" value="CENTER LEFT" class="submit-btn" id="btn-left-calibrate" />
-            </form>
-        </div>
+        <div class="twocolumn">LEFT</div>
         <div class="twocolumn">RIGHT</div>
     </div>
     <div class="row">
+
         <!-- left eye controller -->
         <div class="twocolumn">
+
+            <div class="row">
+                <div class="twocolumn">
+                    <form action="/lc" method="get">
+                        <input type="submit" value="&#9678" class="submit-btn" id="btn-left-calibrate" />
+                    </form>
+                </div>
+                <div class="twocolumn">
+                    <form action="/lz" method="get">
+                        <input type="submit" value="&#128994" class="submit-btn" id="btn-left-zero" />
+                    </form>
+                </div>                
+            </div>
+
             <form action="/lu" method="get">
                 <input type="submit" value="&#8673" class="action-btn" id="btn-left-up" />
             </form>
@@ -47,14 +58,15 @@
                 <input type="submit" value="&#8675" class="action-btn" id="btn-left-down" />
             </form>
         </div>
+
         <!-- right eye controller -->
         <div class="twocolumn">
-            <form action="/app/right&dir=up" method="get">
+            <form action="/" method="get">
                 <input type="submit" value="&#8673" class="action-btn" />
             </form>
             <div class="row">
                 <div class="threecolumn">
-                    <form action="/app/right&dir=left" method="get">
+                    <form action="/" method="get">
                         <input type="submit" value="&#8672" class="action-btn" />
                     </form>
                 </div>
@@ -63,12 +75,12 @@
                     <p>V: -4 diopter</p>
                 </div>
                 <div class="threecolumn">
-                    <form action="/app/right&dir=right" method="get">
+                    <form action="/" method="get">
                         <input type="submit" value="&#8674" class="action-btn" />
                     </form>
                 </div>
             </div>
-            <form action="/app/right&dir=down" method="get">
+            <form action="/" method="get">
                 <input type="submit" value="&#8675" class="action-btn" />
             </form>
         </div>
