@@ -1,6 +1,6 @@
 
 /*
- * Diopter_Controller
+ * Diopter_Controller AMOLED version
  * Sketch used to control the 4 servos for the Diopter project
  * as well as reading the LIDAR for distance measurement
  */
@@ -10,10 +10,29 @@
 #include <WebServer.h>
 #include "SPIFFS.h"
 
+#include <rm67162.h>
+#include <TFT_eSPI.h> 
+#include "true_color.h"
+
+// Display settings
+#define WIDTH  536
+#define HEIGHT 240
+unsigned long targetTime = 0;
+byte red = 31;
+byte green = 0;
+byte blue = 0;
+byte state = 0;
+unsigned int colour = red << 11;
+
 // VAR defs
 IPAddress ipAddress;
 const char *ssid = "DIOPTER-ONE";
 int stepIncrement = 5; // should really be 1 (5 for testing)
+
+// TFT DRIVER
+TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite spr = TFT_eSprite(&tft);
+
 
 // create servo object to control a servo
 Servo leftHorizontalServo;
@@ -154,8 +173,8 @@ void exerciseServo(Servo &s){
   s.write(servoMID);
 }
 
-// ESP32 SETUP
-void setup()
+// ESP32 SETUP - Old version
+void setupOld()
 {
   Serial.begin(115200);
   delay(1000);
@@ -200,9 +219,53 @@ void setup()
   Serial.println("Setup completed");
 }
 
+
+void setup()
+{
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("Running Diopter AMOLED setup");
+
+      // init display
+    rm67162_init();
+    lcd_setRotation(3);
+    spr.createSprite(WIDTH, HEIGHT);
+    spr.setSwapBytes(1);
+
+    // set up wifi & web server
+    initWiFi();
+    initWebServer();
+
+}
 void loop()
 {
+    // Image demo
+    // spr.pushImage(0, 0, WIDTH, HEIGHT, (uint16_t *)tsense_background);
+    // lcd_PushColors(0, 0, WIDTH, HEIGHT, (uint16_t *)spr.getPointer());
+    // delay(10);
+
+    // uint16_t colors[6] = {TFT_RED, TFT_GREEN, TFT_BLUE, TFT_YELLOW, TFT_CYAN, TFT_MAGENTA};
+    // for (int i = 0; i < 6; ++i) {
+    //     spr.fillSprite(TFT_BLACK);
+    //     spr.setTextColor(colors[i], TFT_BLACK);
+    //     spr.drawString("WAVESHARE", WIDTH / 2 - 30, 85, 4);
+    //     spr.drawString("1.91 AMOLED", WIDTH / 2 - 70, 110, 4);
+    //     lcd_PushColors(0, 0, WIDTH, HEIGHT, (uint16_t *)spr.getPointer());
+    //     delay(200);
+    // }
+
+    spr.fillSprite(TFT_BLACK);
+    spr.setTextColor(TFT_CYAN);
+    spr.drawString("SpiralArm  Diopter Controller", 20, 40, 4);
+    spr.setTextColor(TFT_WHITE);
+    spr.drawString("WiFi Name: " + String(ssid), 20, 80, 4);
+    spr.setTextColor(TFT_YELLOW);
+    spr.drawString("IP Address: " + ipAddress.toString(), 20, 120, 4);
+ 
+    lcd_PushColors(0, 0, WIDTH, HEIGHT, (uint16_t *)spr.getPointer());
+
+    delay(200);
 
   // Handle incoming client requests
-  server.handleClient();
+  //server.handleClient();
 }
